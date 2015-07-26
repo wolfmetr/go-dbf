@@ -1,8 +1,10 @@
 package godbf
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"strconv"
@@ -62,13 +64,22 @@ func (df *DbfField) SetFieldName(fieldName string) {
 	df.fieldName = fieldName
 }
 
+func NewFromReader(reader io.Reader, fileEncoding string) (table *DbfTable, err error) {
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(reader)
+	bytes := buf.Bytes()
+	return NewFromBytesArray(bytes, fileEncoding)
+}
+
 func NewFromFile(fileName string, fileEncoding string) (table *DbfTable, err error) {
 	s, err := readFile(fileName)
-
 	if err != nil {
 		return nil, err
 	}
+	return NewFromBytesArray(s, fileEncoding)
+}
 
+func NewFromBytesArray(s []byte, fileEncoding string) (table *DbfTable, err error) {
 	// Create and pupulate DbaseTable struct
 	dt := new(DbfTable)
 
